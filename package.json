@@ -5,5 +5,14 @@
   "main": "dist/index.js",
   "repository": "https://github.com/anandaroop/airtable-geojson",
   "author": "@anandaroop",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.0.3"
+  },
+  "scripts": {
+    "clean": "rm -rf dist/*",
+    "compile": "tsc",
+    "watch": "tsc --watch",
+    "type-check": "tsc --noEmit"
+  }
 }
