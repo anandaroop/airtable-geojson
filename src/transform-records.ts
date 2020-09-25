@@ -66,6 +66,7 @@ const transformRecordToFeature = (
 
     return {
       type: "Feature",
+      id: record.id,
       geometry: {
         type: "Point",
         coordinates: [lng, lat],
