@@ -20,23 +20,36 @@ describe(transformRecordsToFeatureCollection, () => {
     records = deepRecreate(validRecordsFixture)
   })
 
-  it("returns a FeatureCollection object", () => {
+  it("returns a FeatureCollection object and an errors object", () => {
     const result = transformRecordsToFeatureCollection(records)
 
-    expect(result).toEqual(
+    expect(result).toBeInstanceOf(Array)
+
+    const [featureCollection, errors] = result
+
+    expect(featureCollection).toEqual(
       expect.objectContaining({
         type: "FeatureCollection",
         features: expect.any(Array),
       })
     )
+
+    expect(errors).toEqual(
+      expect.objectContaining({
+        missingGeocodes: expect.anything(),
+        invalidGeocodes: expect.anything(),
+      })
+    )
   })
 
   it("transforms the Airtable records & fields into GeoJSON features & properties", () => {
-    const result = transformRecordsToFeatureCollection(records)
+    const [featureCollection, _errors] = transformRecordsToFeatureCollection(
+      records
+    )
 
-    expect(result.features).toHaveLength(3)
+    expect(featureCollection.features).toHaveLength(3)
 
-    result.features.forEach((feature) => {
+    featureCollection.features.forEach((feature) => {
       expect(feature.type).toEqual("Feature")
       expect(feature.geometry.type).toEqual("Point")
       expect(feature.properties).toEqual(
@@ -49,91 +62,103 @@ describe(transformRecordsToFeatureCollection, () => {
   })
 
   it("decodes the Airtable cached geocode field into a GeoJSON geometry", () => {
-    const result = transformRecordsToFeatureCollection(records)
+    const [featureCollection, _errors] = transformRecordsToFeatureCollection(
+      records
+    )
 
-    const feature0 = result.features[0] as Feature<Point>
+    const feature0 = featureCollection.features[0] as Feature<Point>
     expect(feature0.geometry.coordinates[0]).toBeCloseTo(-73.932376, 6)
     expect(feature0.geometry.coordinates[1]).toBeCloseTo(+40.772817, 6)
 
-    const feature1 = result.features[1] as Feature<Point>
+    const feature1 = featureCollection.features[1] as Feature<Point>
     expect(feature1.geometry.coordinates[0]).toBeCloseTo(-73.914695, 6)
     expect(feature1.geometry.coordinates[1]).toBeCloseTo(+40.778732, 6)
 
-    const feature2 = result.features[2] as Feature<Point>
+    const feature2 = featureCollection.features[2] as Feature<Point>
     expect(feature2.geometry.coordinates[0]).toBeCloseTo(-73.872447, 6)
     expect(feature2.geometry.coordinates[1]).toBeCloseTo(+40.742257, 6)
   })
 
   it("removes the encoded geodata field", () => {
-    const result = transformRecordsToFeatureCollection(records)
+    const [featureCollection, _errors] = transformRecordsToFeatureCollection(
+      records
+    )
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const f = result.features[0] as Feature<Point, any>
+    const f = featureCollection.features[0] as Feature<Point, any>
 
     const propertyNames = Object.keys(f.properties)
     expect(propertyNames).not.toContain("Geocode cache")
   })
 
   it("treats the record id as the feature id", () => {
-    const result = transformRecordsToFeatureCollection(records)
+    const [featureCollection, _errors] = transformRecordsToFeatureCollection(
+      records
+    )
 
     records.map((record, i) => {
-      expect(result.features[i].id).toEqual(record.id)
+      expect(featureCollection.features[i].id).toEqual(record.id)
     })
   })
 
   it("renders the correct json", () => {
     expect(transformRecordsToFeatureCollection(records)).toMatchInlineSnapshot(`
-      Object {
-        "features": Array [
-          Object {
-            "geometry": Object {
-              "coordinates": Array [
-                -73.93237599999999,
-                40.772817,
-              ],
-              "type": "Point",
+      Array [
+        Object {
+          "features": Array [
+            Object {
+              "geometry": Object {
+                "coordinates": Array [
+                  -73.93237599999999,
+                  40.772817,
+                ],
+                "type": "Point",
+              },
+              "id": "rec1",
+              "properties": Object {
+                "Name": "First location",
+                "Zip Code": "11111",
+              },
+              "type": "Feature",
             },
-            "id": "rec1",
-            "properties": Object {
-              "Name": "First location",
-              "Zip Code": "11111",
+            Object {
+              "geometry": Object {
+                "coordinates": Array [
+                  -73.914695,
+                  40.7787318,
+                ],
+                "type": "Point",
+              },
+              "id": "rec2",
+              "properties": Object {
+                "Name": "Second location",
+                "Zip Code": "11112",
+              },
+              "type": "Feature",
             },
-            "type": "Feature",
-          },
-          Object {
-            "geometry": Object {
-              "coordinates": Array [
-                -73.914695,
-                40.7787318,
-              ],
-              "type": "Point",
+            Object {
+              "geometry": Object {
+                "coordinates": Array [
+                  -73.8724469,
+                  40.742257,
+                ],
+                "type": "Point",
+              },
+              "id": "rec3",
+              "properties": Object {
+                "Name": "Third location",
+                "Zip Code": "11113",
+              },
+              "type": "Feature",
             },
-            "id": "rec2",
-            "properties": Object {
-              "Name": "Second location",
-              "Zip Code": "11112",
-            },
-            "type": "Feature",
-          },
-          Object {
-            "geometry": Object {
-              "coordinates": Array [
-                -73.8724469,
-                40.742257,
-              ],
-              "type": "Point",
-            },
-            "id": "rec3",
-            "properties": Object {
-              "Name": "Third location",
-              "Zip Code": "11113",
-            },
-            "type": "Feature",
-          },
-        ],
-        "type": "FeatureCollection",
-      }
+          ],
+          "type": "FeatureCollection",
+        },
+        Object {
+          "invalidGeocodes": Array [],
+          "missingGeocodes": Array [],
+        },
+      ]
     `)
   })
 
@@ -143,22 +168,28 @@ describe(transformRecordsToFeatureCollection, () => {
     })
 
     it("decodes the geodata", () => {
-      const result = transformRecordsToFeatureCollection(records, {
-        geocodedFieldName: "Geocodez",
-      })
+      const [featureCollection, _errors] = transformRecordsToFeatureCollection(
+        records,
+        {
+          geocodedFieldName: "Geocodez",
+        }
+      )
 
-      const feature0 = result.features[0] as Feature<Point>
+      const feature0 = featureCollection.features[0] as Feature<Point>
       expect(feature0.geometry.coordinates[0]).toBeCloseTo(-73.932376, 6)
       expect(feature0.geometry.coordinates[1]).toBeCloseTo(+40.772817, 6)
     })
 
     it("removes the encoded geodata field", () => {
-      const result = transformRecordsToFeatureCollection(records, {
-        geocodedFieldName: "Geocodez",
-      })
+      const [featureCollection, _errors] = transformRecordsToFeatureCollection(
+        records,
+        {
+          geocodedFieldName: "Geocodez",
+        }
+      )
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const f = result.features[0] as Feature<Point, any>
+      const f = featureCollection.features[0] as Feature<Point, any>
 
       const propertyNames = Object.keys(f.properties)
       expect(propertyNames).not.toContain("Geocode cache")
@@ -185,10 +216,19 @@ describe(transformRecordsToFeatureCollection, () => {
       )
     })
 
+    it("returns the bad record in the errors object", () => {
+      const [_featureCollection, errors] = transformRecordsToFeatureCollection(
+        records
+      )
+      expect(errors.invalidGeocodes).toEqual([records[0]])
+    })
+
     it("returns other valid features", () => {
-      const result = transformRecordsToFeatureCollection(records)
+      const [featureCollection, _errors] = transformRecordsToFeatureCollection(
+        records
+      )
       expect(records).toHaveLength(2)
-      expect(result.features).toHaveLength(1)
+      expect(featureCollection.features).toHaveLength(1)
     })
   })
 
@@ -212,10 +252,19 @@ describe(transformRecordsToFeatureCollection, () => {
       )
     })
 
+    it("returns the bad record in the errors object", () => {
+      const [_featureCollection, errors] = transformRecordsToFeatureCollection(
+        records
+      )
+      expect(errors.missingGeocodes).toEqual([records[0]])
+    })
+
     it("returns other valid features", () => {
-      const result = transformRecordsToFeatureCollection(records)
+      const [featureCollection, _errors] = transformRecordsToFeatureCollection(
+        records
+      )
       expect(records).toHaveLength(2)
-      expect(result.features).toHaveLength(1)
+      expect(featureCollection.features).toHaveLength(1)
     })
   })
 })

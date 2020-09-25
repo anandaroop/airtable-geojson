@@ -18,6 +18,10 @@ interface Options {
    */
   geocodedFieldName?: string
 }
+interface Errors {
+  missingGeocodes: Airtable.Record<any>[]
+  invalidGeocodes: Airtable.Record<any>[]
+}
 
 /**
  * Transform an array of Airtable records into a
@@ -32,17 +36,38 @@ interface Options {
 export const transformRecordsToFeatureCollection = (
   records: Airtable.Records<any>,
   options?: Options
-): FeatureCollection<Point, any> => {
+): [FeatureCollection<Point, any>, Errors] => {
   const geocodedFieldName = options?.geocodedFieldName || "Geocode cache"
 
-  const validFeatures = records
-    .map((r) => transformRecordToFeature(r, geocodedFieldName))
-    .filter((f) => f !== undefined) as Feature<Point, any>[]
+  const validFeatures: Feature<Point, any>[] = []
+  const missingGeocodes: Airtable.Record<any>[] = []
+  const invalidGeocodes: Airtable.Record<any>[] = []
 
-  return {
+  records.forEach((r) => {
+    try {
+      const f = transformRecordToFeature(r, geocodedFieldName)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      validFeatures.push(f!)
+    } catch (e) {
+      if (e instanceof InvalidGeocodeException) {
+        invalidGeocodes.push(r)
+      } else if (e instanceof MissingGeocodeException) {
+        missingGeocodes.push(r)
+      }
+    }
+  })
+
+  const featureCollection: FeatureCollection<Point, any> = {
     type: "FeatureCollection",
     features: validFeatures,
   }
+
+  const errors: Errors = {
+    missingGeocodes,
+    invalidGeocodes,
+  }
+
+  return [featureCollection, errors]
 }
 
 /**
@@ -82,12 +107,14 @@ const transformRecordToFeature = (
         "Skipping feature where cached geocoded field value was missing:",
         record
       )
+      throw new MissingGeocodeException(record)
     } else if (e instanceof InvalidGeocodeException) {
       console.error(
         "Skipping feature where LatLng appears to be undefined. Showing geodata and record:",
         e.geocode,
         record
       )
+      throw new InvalidGeocodeException(e.geocode, record)
     }
   }
 }

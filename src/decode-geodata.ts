@@ -28,7 +28,7 @@ export class MissingGeocodeException {
   public record: Airtable.Record<any> | undefined
 
   constructor(record?: Airtable.Record<any>) {
-    this.name = "MissingGeocodeExecption"
+    this.name = "MissingGeocodeException"
     this.message = "The cached geocoded field was found to be empty."
     this.record = record
   }
@@ -41,7 +41,7 @@ export class InvalidGeocodeException {
   public record: Airtable.Record<any> | undefined
 
   constructor(field: AirtableCachedGeocode, record?: Airtable.Record<any>) {
-    this.name = "InvalidGeocodeExecption"
+    this.name = "InvalidGeocodeException"
     this.message =
       "The cached geocoded field contained null or otherwise invalid data."
     this.geocode = field
