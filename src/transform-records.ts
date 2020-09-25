@@ -48,9 +48,10 @@ export const transformRecordsToFeatureCollection = (
 /**
  * Converts a single Airtable record into a corresponding GeoJSON Feature.
  *
- * The feature will have a Point `geometry` that matches the cached geocode
- * field from Airtable, and `properties` that match the remainder of the
- * Airtable fields.
+ * The feature will have:
+ * - an `id` matching the Airtable record
+ * - a Point `geometry` that matches the cached geocode field from the Airtable record
+ * - and `properties` that match the remainder of the Airtable fields.
  */
 const transformRecordToFeature = (
   record: Airtable.Record<any>,
