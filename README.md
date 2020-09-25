@@ -25,7 +25,7 @@ const records = await myBase("My table")
 const options = {
   geocodedFieldName: "Geocoder cache",
 }
-const features = transformRecordsToFeatureCollection(records, options)
+const [features, errors] = transformRecordsToFeatureCollection(records, options)
 ```
 
 This would result in `features` looking something like:
@@ -36,6 +36,7 @@ This would result in `features` looking something like:
   "features": [
     {
       "type": "Feature",
+      "id": "rec1",
       "geometry": {
         "type": "Point",
         "coordinates": [-73.932376, 40.772817]
@@ -47,6 +48,7 @@ This would result in `features` looking something like:
     },
     {
       "type": "Feature",
+      "id": "rec2",
       "geometry": {
         "type": "Point",
         "coordinates": [-73.914695, 40.7787318]

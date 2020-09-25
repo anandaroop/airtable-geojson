@@ -31,7 +31,8 @@
     "type-check": "tsc --noEmit",
     "lint": "eslint \"src/**/*.ts\"",
     "test": "jest",
-    "prepublishOnly": "yarn clean && yarn compile"
+    "prepublishOnly": "yarn clean && yarn compile",
+    "release": "np"
   },
   "files": [
     "dist/**/*"
