@@ -74,6 +74,14 @@ describe(transformRecordsToFeatureCollection, () => {
     expect(propertyNames).not.toContain("Geocode cache")
   })
 
+  it("treats the record id as the feature id", () => {
+    const result = transformRecordsToFeatureCollection(records)
+
+    records.map((record, i) => {
+      expect(result.features[i].id).toEqual(record.id)
+    })
+  })
+
   it("renders the correct json", () => {
     expect(transformRecordsToFeatureCollection(records)).toMatchInlineSnapshot(`
       Object {
@@ -86,6 +94,7 @@ describe(transformRecordsToFeatureCollection, () => {
               ],
               "type": "Point",
             },
+            "id": "rec1",
             "properties": Object {
               "Name": "First location",
               "Zip Code": "11111",
@@ -100,6 +109,7 @@ describe(transformRecordsToFeatureCollection, () => {
               ],
               "type": "Point",
             },
+            "id": "rec2",
             "properties": Object {
               "Name": "Second location",
               "Zip Code": "11112",
@@ -114,6 +124,7 @@ describe(transformRecordsToFeatureCollection, () => {
               ],
               "type": "Point",
             },
+            "id": "rec3",
             "properties": Object {
               "Name": "Third location",
               "Zip Code": "11113",
