@@ -1,11 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { Feature, FeatureCollection, Point } from "geojson"
 import {
   decodeGeodata,
   InvalidGeocodeException,
   MissingGeocodeException,
 } from "./decode-geodata"
+import { AirtableGeoJSONErrors } from "./types"
+
+/**
+ * Used to assert that our generic types are key-value maps
+ * that contain at least one string -> string mapping, namely
+ * the one for the geocoded field name -> geocoder cache value
+ */
+interface StringMap {
+  [key: string]: string
+}
 
 interface Options {
   /**
@@ -18,30 +26,23 @@ interface Options {
    */
   geocodedFieldName?: string
 }
-interface Errors {
-  missingGeocodes: Airtable.Record<any>[]
-  invalidGeocodes: Airtable.Record<any>[]
-}
 
 /**
  * Transform an array of Airtable records into a
  * GeoJSON FeatureCollection object, one feature per record.
  *
  * Records with missing or invalid geodata are omitted from the
- * resulting FeatureCollection
- *
- * @param records array of Airtable records
- * @param options configuration options, such as the geocoded field name
+ * resulting FeatureCollection.
  */
-export const transformRecordsToFeatureCollection = (
-  records: Airtable.Records<any>,
+export const transformRecordsToFeatureCollection = <F extends StringMap>(
+  records: Airtable.Records<F>,
   options?: Options
-): [FeatureCollection<Point, any>, Errors] => {
+): [FeatureCollection<Point, F>, AirtableGeoJSONErrors<F>] => {
   const geocodedFieldName = options?.geocodedFieldName || "Geocode cache"
 
-  const validFeatures: Feature<Point, any>[] = []
-  const missingGeocodes: Airtable.Record<any>[] = []
-  const invalidGeocodes: Airtable.Record<any>[] = []
+  const validFeatures: Feature<Point, F>[] = []
+  const missingGeocodes: Airtable.Record<F>[] = []
+  const invalidGeocodes: Airtable.Record<F>[] = []
 
   records.forEach((r) => {
     try {
@@ -57,12 +58,12 @@ export const transformRecordsToFeatureCollection = (
     }
   })
 
-  const featureCollection: FeatureCollection<Point, any> = {
+  const featureCollection: FeatureCollection<Point, F> = {
     type: "FeatureCollection",
     features: validFeatures,
   }
 
-  const errors: Errors = {
+  const errors: AirtableGeoJSONErrors<F> = {
     missingGeocodes,
     invalidGeocodes,
   }
@@ -71,17 +72,17 @@ export const transformRecordsToFeatureCollection = (
 }
 
 /**
- * Converts a single Airtable record into a corresponding GeoJSON Feature.
+ * Transform a single Airtable record into a corresponding GeoJSON Feature.
  *
  * The feature will have:
  * - an `id` matching the Airtable record
  * - a Point `geometry` that matches the cached geocode field from the Airtable record
  * - and `properties` that match the remainder of the Airtable fields.
  */
-const transformRecordToFeature = (
-  record: Airtable.Record<any>,
+const transformRecordToFeature = <F extends StringMap>(
+  record: Airtable.Record<F>,
   geocodedFieldName: string
-): Feature<Point, any> | undefined => {
+): Feature<Point, F> | undefined => {
   try {
     const geodata = decodeGeodata(record.fields[geocodedFieldName])
     const {

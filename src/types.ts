@@ -27,3 +27,8 @@ export interface AirtableCachedGeocode {
   /** cache expiry, in epoch milliseconds */
   e: number
 }
+
+export interface AirtableGeoJSONErrors<F> {
+  missingGeocodes: Airtable.Record<F>[]
+  invalidGeocodes: Airtable.Record<F>[]
+}
