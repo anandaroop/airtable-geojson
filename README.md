@@ -8,7 +8,7 @@ Given an Airtable configured with the [Map App](https://support.airtable.com/hc/
 
 ```js
 import Airtable from "airtable"
-import { transformRecordsToFeatureCollection } from "airtable-geojson"
+import { createFeatureCollection } from "airtable-geojson"
 
 const apiKey = "secret"
 const baseId = "app123xyz"
@@ -25,7 +25,7 @@ const records = await myBase("My table")
 const options = {
   geocodedFieldName: "Geocoder cache",
 }
-const [features, errors] = transformRecordsToFeatureCollection(records, options)
+const [features, errors] = createFeatureCollection(records, options)
 ```
 
 This would result in `features` looking something like:
@@ -60,4 +60,19 @@ This would result in `features` looking something like:
     }
   ]
 }
+```
+
+And any records whose geodata could not be decoded would be returned in the `errors` object:
+
+```js
+{
+  missingGeocodes: [
+    // Airtable records here
+  ],
+
+  invalidGeocodes: [
+    // Airtable records here
+  ]
+}
+
 ```
