@@ -4,7 +4,7 @@ import {
   InvalidGeocodeException,
   MissingGeocodeException,
 } from "./geodata"
-import { AirtableGeoJSONErrors, StringMap } from "./types"
+import { AirtableGeoJSONErrors } from "./types"
 
 interface Options {
   /**
@@ -25,7 +25,7 @@ interface Options {
  * Records with missing or invalid geodata are omitted from the
  * resulting FeatureCollection.
  */
-export const createFeatureCollection = <F extends StringMap>(
+export const createFeatureCollection = <F>(
   records: Airtable.Records<F>,
   options?: Options
 ): [FeatureCollection<Point, F>, AirtableGeoJSONErrors<F>] => {
@@ -70,7 +70,7 @@ export const createFeatureCollection = <F extends StringMap>(
  * - a Point `geometry` that matches the cached geocode field from the Airtable record
  * - and `properties` that match the remainder of the Airtable fields.
  */
-const createFeature = <F extends StringMap>(
+const createFeature = <F>(
   record: Airtable.Record<F>,
   geocodedFieldName: string
 ): Feature<Point, F> | undefined => {

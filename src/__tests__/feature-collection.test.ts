@@ -5,9 +5,8 @@ import { fixture as validRecordsFixture } from "../__fixtures__/valid-records"
 import { fixture as customColumnsFixture } from "../__fixtures__/custom-column"
 import { fixture as invalidGeocodeFixture } from "../__fixtures__/invalid-geocode"
 import { fixture as missingGeocodeFixture } from "../__fixtures__/missing-geocode"
-import { StringMap } from "../types"
 
-interface FixtureFields extends StringMap {
+interface FixtureFields {
   Name: string
   "Zip Code": string
 }
