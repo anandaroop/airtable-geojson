@@ -27,3 +27,17 @@ export interface AirtableCachedGeocode {
   /** cache expiry, in epoch milliseconds */
   e: number
 }
+
+export interface AirtableGeoJSONErrors<F> {
+  missingGeocodes: Airtable.Record<F>[]
+  invalidGeocodes: Airtable.Record<F>[]
+}
+
+/**
+ * Used to assert that our generic types are key-value maps
+ * that contain at least one string -> string mapping, namely
+ * the one for the geocoded field name -> geocoder cache value
+ */
+export interface StringMap {
+  [key: string]: string
+}
