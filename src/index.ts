@@ -1,1 +1,1 @@
-export { transformRecordsToFeatureCollection } from "./transform-records"
+export { createFeatureCollection } from "./feature-collection"

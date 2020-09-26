@@ -3,17 +3,8 @@ import {
   decodeGeodata,
   InvalidGeocodeException,
   MissingGeocodeException,
-} from "./decode-geodata"
-import { AirtableGeoJSONErrors } from "./types"
-
-/**
- * Used to assert that our generic types are key-value maps
- * that contain at least one string -> string mapping, namely
- * the one for the geocoded field name -> geocoder cache value
- */
-interface StringMap {
-  [key: string]: string
-}
+} from "./geodata"
+import { AirtableGeoJSONErrors, StringMap } from "./types"
 
 interface Options {
   /**
@@ -34,7 +25,7 @@ interface Options {
  * Records with missing or invalid geodata are omitted from the
  * resulting FeatureCollection.
  */
-export const transformRecordsToFeatureCollection = <F extends StringMap>(
+export const createFeatureCollection = <F extends StringMap>(
   records: Airtable.Records<F>,
   options?: Options
 ): [FeatureCollection<Point, F>, AirtableGeoJSONErrors<F>] => {
@@ -46,7 +37,7 @@ export const transformRecordsToFeatureCollection = <F extends StringMap>(
 
   records.forEach((r) => {
     try {
-      const f = transformRecordToFeature(r, geocodedFieldName)
+      const f = createFeature(r, geocodedFieldName)
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       validFeatures.push(f!)
     } catch (e) {
@@ -79,7 +70,7 @@ export const transformRecordsToFeatureCollection = <F extends StringMap>(
  * - a Point `geometry` that matches the cached geocode field from the Airtable record
  * - and `properties` that match the remainder of the Airtable fields.
  */
-const transformRecordToFeature = <F extends StringMap>(
+const createFeature = <F extends StringMap>(
   record: Airtable.Record<F>,
   geocodedFieldName: string
 ): Feature<Point, F> | undefined => {
