@@ -1,2 +1,3 @@
 export { createFeatureCollection } from "./feature-collection"
-export { AirtableGeoJSONErrors } from "./types"
+export { InvalidGeocodeException } from "./geodata"
+export { AirtableGeoJSONErrors, AirtableCachedGeocode } from "./types"
