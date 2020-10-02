@@ -5,14 +5,15 @@
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
-    "prettier"
+    "prettier",
+    "plugin:jest/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 12,
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint"],
+  "plugins": ["@typescript-eslint", "jest"],
   "rules": {
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": [
@@ -25,7 +26,8 @@
         "ts-ignore": "allow-with-description",
         "minimumDescriptionLength": 8
       }
-    ]
+    ],
+    "jest/no-test-prefixes": "off"
   },
   "ignorePatterns": ["jest.config.js"]
 }

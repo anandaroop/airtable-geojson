@@ -15,7 +15,7 @@ const deepRecreate = (obj: unknown) => JSON.parse(JSON.stringify(obj))
 
 let records: Airtable.Records<FixtureFields>
 
-describe(createFeatureCollection, () => {
+describe("createFeatureCollection", () => {
   beforeEach(() => {
     records = deepRecreate(validRecordsFixture)
   })
@@ -246,7 +246,7 @@ describe(createFeatureCollection, () => {
     })
   })
 
-  fdescribe("with a decorator function", () => {
+  describe("with a decorator function", () => {
     it("decorates the GeoJSON Feature's properties with any old thing", () => {
       const [featureCollection, _errors] = createFeatureCollection(records, {
         decoratorFn: () => {
