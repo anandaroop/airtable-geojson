@@ -18,6 +18,13 @@
     "@typescript-eslint/no-unused-vars": [
       "error",
       { "vars": "all", "varsIgnorePattern": "^_" }
+    ],
+    "@typescript-eslint/ban-ts-comment": [
+      "error",
+      {
+        "ts-ignore": "allow-with-description",
+        "minimumDescriptionLength": 8
+      }
     ]
   },
   "ignorePatterns": ["jest.config.js"]
