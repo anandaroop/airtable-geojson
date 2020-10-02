@@ -245,4 +245,40 @@ describe(createFeatureCollection, () => {
       expect(featureCollection.features).toHaveLength(1)
     })
   })
+
+  fdescribe("with a decorator function", () => {
+    it("decorates the GeoJSON Feature's properties with any old thing", () => {
+      const [featureCollection, _errors] = createFeatureCollection(records, {
+        decoratorFn: () => {
+          return {
+            foo: "bar",
+          }
+        },
+      })
+
+      records.map((record, i) => {
+        expect(featureCollection.features[i].properties).toMatchObject({
+          foo: "bar",
+        })
+      })
+    })
+
+    it("decorates the GeoJSON Feature's properties with attributes of the Airtable record", () => {
+      const [featureCollection, _errors] = createFeatureCollection(records, {
+        decoratorFn: (record) => {
+          return {
+            // @ts-ignore: only record's fixture fields are known
+            created_at: record._rawJson.createdTime,
+          }
+        },
+      })
+
+      records.map((_record, i) => {
+        expect(featureCollection.features[i].properties).toMatchObject({
+          // @ts-ignore: only record's fixture fields are known
+          created_at: records[i]._rawJson.createdTime,
+        })
+      })
+    })
+  })
 })

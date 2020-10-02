@@ -16,7 +16,18 @@ interface Options {
    * Defaults to "Geocode cache"
    */
   geocodedFieldName?: string
+
+  /**
+   * A decorator function that takes an Airtable record as its input
+   * and outputs an object, to be spread into the resulting
+   * GeoJSON Features’ properties
+   */
+  decoratorFn?: DecoratorFunction
 }
+
+type DecoratorFunction = (
+  record: Airtable.Record<unknown>
+) => Record<string, unknown>
 
 /**
  * Transform an array of Airtable records into a
@@ -37,7 +48,7 @@ export const createFeatureCollection = <F>(
 
   records.forEach((r) => {
     try {
-      const f = createFeature(r, geocodedFieldName)
+      const f = createFeature(r, geocodedFieldName, options?.decoratorFn)
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       validFeatures.push(f!)
     } catch (e) {
@@ -72,7 +83,8 @@ export const createFeatureCollection = <F>(
  */
 const createFeature = <F>(
   record: Airtable.Record<F>,
-  geocodedFieldName: string
+  geocodedFieldName: string,
+  decoratorFn?: DecoratorFunction
 ): Feature<Point, F> | undefined => {
   try {
     const geodata = decodeGeodata(record.fields[geocodedFieldName])
@@ -81,6 +93,8 @@ const createFeature = <F>(
     } = geodata
 
     delete record.fields[geocodedFieldName]
+
+    const decoratedFields = decoratorFn ? decoratorFn(record) : {}
 
     return {
       type: "Feature",
@@ -91,6 +105,7 @@ const createFeature = <F>(
       },
       properties: {
         ...record.fields,
+        ...decoratedFields,
       },
     }
   } catch (e) {
