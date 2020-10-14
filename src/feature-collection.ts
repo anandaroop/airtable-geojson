@@ -23,11 +23,19 @@ interface Options {
    * GeoJSON Features’ properties
    */
   decoratorFn?: DecoratorFunction
+
+  /**
+   * A colorizer function that takes an Airtable record as its input
+   * and outputs the value of the 'marker-color' property
+   */
+  colorizerFn?: ColorizerFunction
 }
 
 type DecoratorFunction = (
   record: Airtable.Record<unknown>
 ) => Record<string, unknown>
+
+type ColorizerFunction = (record: Airtable.Record<unknown>) => string
 
 /**
  * Transform an array of Airtable records into a
@@ -48,7 +56,12 @@ export const createFeatureCollection = <F>(
 
   records.forEach((r) => {
     try {
-      const f = createFeature(r, geocodedFieldName, options?.decoratorFn)
+      const f = createFeature(
+        r,
+        geocodedFieldName,
+        options?.decoratorFn,
+        options?.colorizerFn
+      )
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       validFeatures.push(f!)
     } catch (e) {
@@ -84,7 +97,8 @@ export const createFeatureCollection = <F>(
 const createFeature = <F>(
   record: Airtable.Record<F>,
   geocodedFieldName: string,
-  decoratorFn?: DecoratorFunction
+  decoratorFn?: DecoratorFunction,
+  colorizerFn?: ColorizerFunction
 ): Feature<Point, F> | undefined => {
   try {
     const geodata = decodeGeodata(record.fields[geocodedFieldName])
@@ -92,9 +106,11 @@ const createFeature = <F>(
       o: { lat, lng },
     } = geodata
 
-    delete record.fields[geocodedFieldName]
+    const properties = { ...record.fields }
+    delete properties[geocodedFieldName]
 
     const decoratedFields = decoratorFn ? decoratorFn(record) : {}
+    const markerColor = colorizerFn ? colorizerFn(record) : undefined
 
     return {
       type: "Feature",
@@ -104,8 +120,9 @@ const createFeature = <F>(
         coordinates: [lng, lat],
       },
       properties: {
-        ...record.fields,
+        ...properties,
         ...decoratedFields,
+        ...(markerColor ? { "marker-color": markerColor } : undefined),
       },
     }
   } catch (e) {
