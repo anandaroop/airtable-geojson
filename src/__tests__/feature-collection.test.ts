@@ -256,7 +256,7 @@ describe("createFeatureCollection", () => {
         },
       })
 
-      records.map((record, i) => {
+      records.map((_record, i) => {
         expect(featureCollection.features[i].properties).toMatchObject({
           foo: "bar",
         })
@@ -279,6 +279,33 @@ describe("createFeatureCollection", () => {
           created_at: records[i]._rawJson.createdTime,
         })
       })
+    })
+  })
+
+  describe("with a colorizer function", () => {
+    it("decorates the GeoJSON Feature's properties with  a 'marker-color' property", () => {
+      const [featureCollection, _errors] = createFeatureCollection(records, {
+        colorizerFn: (record) => {
+          const zipCodeColorMap = {
+            "11111": "red",
+            "11112": "green",
+            "11113": "blue",
+          }
+          return zipCodeColorMap[
+            (record as Airtable.Record<FixtureFields>).fields["Zip Code"]
+          ]
+        },
+      })
+
+      expect(featureCollection.features[0].properties["marker-color"]).toEqual(
+        "red"
+      )
+      expect(featureCollection.features[1].properties["marker-color"]).toEqual(
+        "green"
+      )
+      expect(featureCollection.features[2].properties["marker-color"]).toEqual(
+        "blue"
+      )
     })
   })
 })
