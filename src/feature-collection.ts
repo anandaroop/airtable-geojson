@@ -22,13 +22,13 @@ interface Options {
    * and outputs an object, to be spread into the resulting
    * GeoJSON Features’ properties
    */
-  decoratorFn?: DecoratorFunction
+  decorate?: DecoratorFunction
 
   /**
    * A colorizer function that takes an Airtable record as its input
    * and outputs the value of the 'marker-color' property
    */
-  colorizerFn?: ColorizerFunction
+  colorize?: ColorizerFunction
 }
 
 type DecoratorFunction = (
@@ -59,8 +59,8 @@ export const createFeatureCollection = <F>(
       const f = createFeature(
         r,
         geocodedFieldName,
-        options?.decoratorFn,
-        options?.colorizerFn
+        options?.decorate,
+        options?.colorize
       )
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       validFeatures.push(f!)
@@ -97,8 +97,8 @@ export const createFeatureCollection = <F>(
 const createFeature = <F>(
   record: Airtable.Record<F>,
   geocodedFieldName: string,
-  decoratorFn?: DecoratorFunction,
-  colorizerFn?: ColorizerFunction
+  decorate?: DecoratorFunction,
+  colorize?: ColorizerFunction
 ): Feature<Point, F> | undefined => {
   try {
     const geodata = decodeGeodata(record.fields[geocodedFieldName])
@@ -109,8 +109,8 @@ const createFeature = <F>(
     const properties = { ...record.fields }
     delete properties[geocodedFieldName]
 
-    const decoratedFields = decoratorFn ? decoratorFn(record) : {}
-    const markerColor = colorizerFn ? colorizerFn(record) : undefined
+    const decoratedFields = decorate ? decorate(record) : {}
+    const markerColor = colorize ? colorize(record) : undefined
 
     return {
       type: "Feature",
