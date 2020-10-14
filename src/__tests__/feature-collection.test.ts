@@ -249,7 +249,7 @@ describe("createFeatureCollection", () => {
   describe("with a decorator function", () => {
     it("decorates the GeoJSON Feature's properties with any old thing", () => {
       const [featureCollection, _errors] = createFeatureCollection(records, {
-        decoratorFn: () => {
+        decorate: () => {
           return {
             foo: "bar",
           }
@@ -265,7 +265,7 @@ describe("createFeatureCollection", () => {
 
     it("decorates the GeoJSON Feature's properties with attributes of the Airtable record", () => {
       const [featureCollection, _errors] = createFeatureCollection(records, {
-        decoratorFn: (record) => {
+        decorate: (record) => {
           return {
             // @ts-ignore: only record's fixture fields are known
             created_at: record._rawJson.createdTime,
@@ -285,7 +285,7 @@ describe("createFeatureCollection", () => {
   describe("with a colorizer function", () => {
     it("decorates the GeoJSON Feature's properties with  a 'marker-color' property", () => {
       const [featureCollection, _errors] = createFeatureCollection(records, {
-        colorizerFn: (record) => {
+        colorize: (record) => {
           const zipCodeColorMap = {
             "11111": "red",
             "11112": "green",
